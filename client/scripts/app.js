@@ -1,5 +1,7 @@
 var clicks = 0;
 
+var divArray = [];
+
 //Something that changes the number of Clicks
 //That something I know, is that button
 //Click Interaction changes the value of Clicks
@@ -23,6 +25,7 @@ function appendToContainer(data){
     $el.append("<div>" + data.name + "</div>");
     $el.append("<button class='remove-button'>Remove</button>");
     $el.append("<button class='location-button'>Show Location</button>");
+    divArray.push($el);
 }
 
 
@@ -30,11 +33,15 @@ function appendToContainer(data){
 function getObjectData(){
     $.ajax({
         url: "/data",
+        beforeSend: function(){
+            $("#container").append("<p id='someId'>Loading</p>");
+        },
         success: function(data){
-            console.log(data);
+            $("#someId").remove();
             $.each(data, function(key, value){
                 appendToContainer(this);
             });
+            doSomething(divArray);
         }
     });
 }
@@ -52,7 +59,14 @@ $(document).ready(function (){
     });
 
     $("body").on('click', '.location-button', function(){
-        var $el = $(this).parent();
-        $el.append("<p>" + $el.data("location") + "</p>");
+        var $parentEl = $(this).parent();
+        var $el = $parentEl.children().first();
+        $el.append("<p> " + $parentEl.data("location") + "</p>");
     });
 });
+
+function doSomething(someArray){
+    for(var i = 0; i < someArray.length; i++){
+        someArray[i].hide().delay(i * 400).slideDown(300);
+    }
+}

@@ -18,6 +18,14 @@ module.exports = function(grunt){
                     "jquery/dist/jquery.min.js"
                 ],
                 "dest": "server/public/vendors/"
+            },
+            css: {
+                expand: true,
+                cwd: 'client',
+                src: [
+                    "styles/style.css"
+                ],
+                "dest": "server/public/assets/"
             }
         }
     });
