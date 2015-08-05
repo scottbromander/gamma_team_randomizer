@@ -1,34 +1,14 @@
 var express = require("express");
 var path = require("path");
 
+var people = require("./public/data/people");
+
 var app = express();
 
 app.set("port", (process.env.PORT || 5000));
 
 app.get("/data", function(req, res){
-    setTimeout(function(){
-        res.json({
-            "scott": {
-                "name" : "Scott",
-                "location" : "Blaine"
-            },
-            "brandon":{
-                "name" : "Brandon",
-                "location" : "Minneapolis"
-            },
-            "skyler":{
-                "name" : "Skyler",
-                "location" : "Maple Grove"
-            },
-            "bob": {
-                "name" : "Bob",
-                "location" : "Maplewood"
-            }
-        });
-    }, 5000);
-
-
-
+    res.json(people);
 });
 
 app.get("/*", function(req, res){

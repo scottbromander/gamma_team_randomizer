@@ -1,72 +1,91 @@
-var clicks = 0;
+var teamArray = [];
+var minTeamSize = 2;
+var maxTeamSize = 11;
 
-var divArray = [];
+var dataFlag = false;
 
-//Something that changes the number of Clicks
-//That something I know, is that button
-//Click Interaction changes the value of Clicks
-//Therefor, I need an listener to listen for the button click.
+var selectedTeamSize = 0;
 
-//Some sort of check, to see if clicks is == 3
-//If it is, run the Ajax call.
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex ;
 
-//WHEN THE AJAX CALL COMES BACK, APPEND THE NAME OF EACH PERSON ON THE DOM
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
 
-function checkThree(value){
-    if(value == 3){
-        return true;
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+function appendTeamSizeButtons(){
+    for(var i = minTeamSize; i < maxTeamSize + 1; i++){
+        var $el = $("#buttonContainer");
+        $el.append("<button class='team-size-button'>" + i + "</button>");
+
+        var $childEl = $el.children().last();
+
+        $childEl.data("teamsize", i);
+    }
+    $("#buttonContainer").append("<button id='randomizeTeam'>Randomize!</button>")
+}
+
+function appendTeamContainer(teamNumber){
+    $("#teamContainer").append("<div id='team" + teamNumber + "' class='team-container'>Team " + (teamNumber + 1) + "</div>");
+    //$("#teamContainer").children().last().data("team", teamNumber);
+}
+
+function assignPeopleToTeam(shuffledArray){
+    var teamToWrite = 0;
+    for(var i = 0; i < shuffledArray.length; i++){
+        writeTeamToDOM(shuffledArray[i], teamToWrite, i);
+        teamToWrite++;
+        if(teamToWrite >= selectedTeamSize){
+            teamToWrite = 0;
+        }
     }
 }
 
-function appendToContainer(data){
-    $("#container").append("<div></div>");
-    var $el = $("#container").children().last();
-    $el.data("location", data.location);
-    $el.append("<div>" + data.name + "</div>");
-    $el.append("<button class='remove-button'>Remove</button>");
-    $el.append("<button class='location-button'>Show Location</button>");
-    divArray.push($el);
+function writeTeamToDOM(person, assignedTeam, index){
+    $("#team" + assignedTeam).append("<p>" + person + "</p>");
+    $("#team" + assignedTeam).children().last().hide().delay(index * 500).slideDown(200);
 }
 
-
-
-function getObjectData(){
+$(document).ready(function(){
     $.ajax({
-        url: "/data",
-        beforeSend: function(){
-            $("#container").append("<p id='someId'>Loading</p>");
-        },
+       url: "/data",
         success: function(data){
-            $("#someId").remove();
-            $.each(data, function(key, value){
-                appendToContainer(this);
-            });
-            doSomething(divArray);
-        }
-    });
-}
-
-$(document).ready(function (){
-    $(".click-button").on('click', function(){
-        clicks++;
-        if(checkThree(clicks)){
-            getObjectData();
+            teamArray = data.people;
+            dataFlag = true;
         }
     });
 
-    $("body").on('click', '.remove-button', function(){
-       $(this).parent().remove();
+    appendTeamSizeButtons();
+
+    $("#buttonContainer").on('click', '.team-size-button', function(){
+        selectedTeamSize = $(this).data("teamsize");
     });
 
-    $("body").on('click', '.location-button', function(){
-        var $parentEl = $(this).parent();
-        var $el = $parentEl.children().first();
-        $el.append("<p> " + $parentEl.data("location") + "</p>");
+    $("#buttonContainer").on('click', '#randomizeTeam', function(){
+        if(selectedTeamSize != 0 && dataFlag){
+            teamArray = shuffle(teamArray);
+
+            for(var i = 0; i < selectedTeamSize; i++){
+                appendTeamContainer(i);
+            }
+
+            assignPeopleToTeam(teamArray);
+        } else {
+            alert("You need to select a team size!")
+        }
+
+
     });
 });
-
-function doSomething(someArray){
-    for(var i = 0; i < someArray.length; i++){
-        someArray[i].hide().delay(i * 400).slideDown(300);
-    }
-}
